@@ -47,6 +47,13 @@
       "location": "Members"
     },
     {
+      "name": "NAS Explorer",
+      "url": "https://file.rahoon.site",
+      "subtitle": "file.rahoon.site",
+      "icon": "https://raw.githubusercontent.com/WalkxCode/dashboard-icons/main/png/filebrowser.png",
+      "location": "Members"
+    },
+    {
       "name": "Portfolio",
       "url": "https://portfolio.rahoon.site",
       "subtitle": "portfolio.rahoon.site",

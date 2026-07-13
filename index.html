@@ -516,12 +516,14 @@
     }
 
     // 비공개 평문(섹션-키 구조)을 location 태그가 붙은 평탄 배열로 변환.
+    // config 를 뺀 모든 최상위 키를 섹션으로 취급 → 섹션 키를 SECTION_ORDER 어디에든 매핑 가능.
     function normalizePrivate(data) {
       const services = [];
       const servers = [];
-      for (const key of PRIVATE_SECTION_KEYS) {
+      for (const key of Object.keys(data)) {
+        if (key === 'config') continue;
         const secData = data[key];
-        if (!secData) continue;
+        if (!secData || typeof secData !== 'object') continue;
         (secData.services || []).forEach(s => services.push({ ...s, location: key }));
         (secData.servers || []).forEach(s => servers.push({ ...s, location: key }));
       }
@@ -611,7 +613,6 @@
       { key: 'Infra-HomeLab', label: '인프라관리 · 홈랩' },
       { key: 'Traffic', label: '유입관리' }
     ];
-    const PRIVATE_SECTION_KEYS = ['Personal', 'Infra-Cloud', 'Infra-HomeLab', 'Traffic'];
 
     function sortByName(a, b) {
       const na = (a.name || '').toLowerCase();
