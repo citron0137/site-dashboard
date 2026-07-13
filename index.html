@@ -115,20 +115,19 @@
       vertical-align: middle;
     }
 
-    .group-location[data-location="HomeLab"] .location-title::before,
-    .group-location[data-location="HomeLab-Server"] .location-title::before,
-    .group-location[data-location="Public"] .location-title::before {
+    .group-location[data-location="Public"] .location-title::before,
+    .group-location[data-location="Infra-HomeLab"] .location-title::before {
       background: var(--accent);
     }
 
-    .group-location[data-location="AWS"] .location-title::before,
-    .group-location[data-location="AWS-Server"] .location-title::before,
-    .group-location[data-location="Members"] .location-title::before {
+    .group-location[data-location="Members"] .location-title::before,
+    .group-location[data-location="Infra-Cloud"] .location-title::before {
       background: var(--aws);
     }
 
-    .group-location[data-location="Tools"] .location-title::before,
-    .group-location[data-location="Profile"] .location-title::before {
+    .group-location[data-location="Profile"] .location-title::before,
+    .group-location[data-location="Personal"] .location-title::before,
+    .group-location[data-location="Traffic"] .location-title::before {
       background: var(--external);
     }
 
@@ -516,35 +515,40 @@
       sessionStorage.setItem(STORAGE_KEY, on ? '1' : '0');
     }
 
-    function normalizeExtraData(data) {
-      if (data.services) {
-        return { extraServices: data.services, extraServers: data.servers || [] };
+    // 비공개 평문(섹션-키 구조)을 location 태그가 붙은 평탄 배열로 변환.
+    function normalizePrivate(data) {
+      const services = [];
+      const servers = [];
+      for (const key of PRIVATE_SECTION_KEYS) {
+        const secData = data[key];
+        if (!secData) continue;
+        (secData.services || []).forEach(s => services.push({ ...s, location: key }));
+        (secData.servers || []).forEach(s => servers.push({ ...s, location: key }));
       }
-      const extraServices = [];
-      const extraServers = [];
-      for (const loc of LOCATION_ORDER) {
-        const locData = data[loc];
-        if (locData) {
-          (locData.services || []).forEach(s => extraServices.push({ ...s, location: loc }));
-          (locData.servers || []).forEach(s => extraServers.push({ ...s, location: loc }));
-        }
-      }
-      return { extraServices, extraServers };
+      return { services, servers };
     }
 
+    async function fetchPublic() {
+      const res = await fetch('./links.json');
+      if (!res.ok) throw new Error('links.json을 불러올 수 없습니다.');
+      return await res.json();
+    }
+
+    // 잠금 시: 공개 링크만. 잠금해제 시: 공개 + 비공개 섹션 병합 (공개 항목 중복 없음).
     async function loadLinks() {
+      const pub = await fetchPublic();
+      const publicServices = (pub.services || []).map(s => ({ ...s }));
+
       if (!isExtendedMode()) {
-        const publicRes = await fetch('./links.json');
-        if (!publicRes.ok) throw new Error('links.json을 불러올 수 없습니다.');
-        return await publicRes.json();
+        return { config: pub.config || {}, services: publicServices, servers: [] };
       }
 
       const cachedPassword = sessionStorage.getItem(STORAGE_KEY + '-pw');
       if (!cachedPassword) throw new Error('PASSWORD_REQUIRED');
 
-      let extraData;
+      let priv;
       try {
-        extraData = await tryUnlock(cachedPassword);
+        priv = await tryUnlock(cachedPassword);
       } catch (e) {
         if (e.message === 'FETCH_FAILED') throw new Error('데이터를 불러올 수 없습니다.');
         sessionStorage.removeItem(STORAGE_KEY + '-pw');
@@ -552,12 +556,11 @@
         throw new Error('복호화 실패. 비밀번호를 확인하세요.');
       }
 
-      const { extraServices, extraServers } = normalizeExtraData(extraData);
+      const { services: privServices, servers: privServers } = normalizePrivate(priv);
       return {
-        config: extraData.config || {},
-        publicServices: [],
-        extraServices,
-        extraServers
+        config: pub.config || {},
+        services: publicServices.concat(privServices),
+        servers: privServers
       };
     }
 
@@ -598,21 +601,17 @@
       return div.innerHTML;
     }
 
-    const PUBLIC_SECTION_ORDER = [
+    // 공개 3섹션(잠금 시에도 표시) + 비공개 4섹션(잠금해제 시 추가). 표시 순서 = 배열 순서.
+    const SECTION_ORDER = [
       { key: 'Public', label: '공개 서비스' },
       { key: 'Members', label: '인가 전용' },
-      { key: 'Profile', label: '프로필' }
+      { key: 'Profile', label: '프로필' },
+      { key: 'Personal', label: '개인' },
+      { key: 'Infra-Cloud', label: '인프라관리 · 클라우드' },
+      { key: 'Infra-HomeLab', label: '인프라관리 · 홈랩' },
+      { key: 'Traffic', label: '유입관리' }
     ];
-    const LOCATION_ORDER = ['HomeLab', 'AWS', 'Tools', 'Profile'];
-    const LOCATION_LABELS = { HomeLab: 'HomeLab', AWS: 'AWS', Tools: 'Tools', Profile: 'Profile' };
-    const EXTRA_SECTION_ORDER = [
-      { key: 'HomeLab', label: 'HomeLab', type: 'services', location: 'HomeLab' },
-      { key: 'HomeLab-Server', label: 'HomeLab-Server', type: 'servers', location: 'HomeLab' },
-      { key: 'AWS', label: 'AWS', type: 'services', location: 'AWS' },
-      { key: 'AWS-Server', label: 'AWS-Server', type: 'servers', location: 'AWS' },
-      { key: 'Tools', label: 'Tools', type: 'services', location: 'Tools' },
-      { key: 'Profile', label: 'Profile', type: 'services', location: 'Profile' }
-    ];
+    const PRIVATE_SECTION_KEYS = ['Personal', 'Infra-Cloud', 'Infra-HomeLab', 'Traffic'];
 
     function sortByName(a, b) {
       const na = (a.name || '').toLowerCase();
@@ -624,79 +623,37 @@
       return na.localeCompare(nb, 'en', { sensitivity: 'base' });
     }
 
-    function groupByLocation(services) {
-      const groups = {};
-      for (const loc of LOCATION_ORDER) {
-        const arr = (services || []).filter(s => s.location === loc);
-        arr.sort(sortByName);
-        groups[loc] = arr;
-      }
-      return groups;
-    }
-
     function render(data, config) {
       const title = config?.title || 'Dashboard';
       document.getElementById('title').textContent = title;
 
+      const services = data.services || [];
+      const servers = data.servers || [];
+      const known = new Set(SECTION_ORDER.map(s => s.key));
+
       let html = '';
-      if (data.publicServices !== undefined) {
-        if (data.publicServices.length > 0) {
-          const sorted = [...data.publicServices].sort(sortByName);
-          html += `
-            <section class="section" data-type="public">
-              <div class="grid">${sorted.map(renderCard).join('')}</div>
-            </section>
-          `;
-        }
-        if ((data.extraServices && data.extraServices.length > 0) || (data.extraServers && data.extraServers.length > 0)) {
-          const servicesByLoc = groupByLocation(data.extraServices || []);
-          const serversByLoc = {};
-          for (const loc of LOCATION_ORDER) {
-            const arr = (data.extraServers || []).filter(s => s.location === loc);
-            arr.sort(sortByName);
-            serversByLoc[loc] = arr;
-          }
-          let extraHtml = '';
-          for (const sec of EXTRA_SECTION_ORDER) {
-            const items = sec.type === 'services' ? (servicesByLoc[sec.location] || []) : (serversByLoc[sec.location] || []);
-            if (items.length === 0) continue;
-            const gridContent = sec.type === 'services'
-              ? items.map(renderCard).join('')
-              : items.map(renderServerCard).join('');
-            extraHtml += `
-              <div class="group-location" data-location="${escapeHtml(sec.key)}">
-                <h3 class="location-title">${escapeHtml(sec.label)}</h3>
-                <div class="grid">${gridContent}</div>
-              </div>
-            `;
-          }
-          html += `<section class="section" data-type="extra">${extraHtml}</section>`;
-        }
-      } else {
-        const services = data.services || [];
-        let publicHtml = '';
-        for (const sec of PUBLIC_SECTION_ORDER) {
-          const items = services.filter(s => s.location === sec.key).sort(sortByName);
-          if (items.length === 0) continue;
-          publicHtml += `
-            <div class="group-location" data-location="${escapeHtml(sec.key)}">
-              <h3 class="location-title">${escapeHtml(sec.label)}</h3>
-              <div class="grid">${items.map(renderCard).join('')}</div>
-            </div>
-          `;
-        }
-        const uncategorized = services
-          .filter(s => !PUBLIC_SECTION_ORDER.some(sec => sec.key === s.location))
-          .sort(sortByName);
-        if (uncategorized.length > 0) {
-          publicHtml += `<div class="grid">${uncategorized.map(renderCard).join('')}</div>`;
-        }
-        html = publicHtml
-          ? `<section class="section" data-type="public">${publicHtml}</section>`
-          : '<p class="loading">등록된 서비스가 없습니다.</p>';
+      for (const sec of SECTION_ORDER) {
+        const svc = services.filter(s => s.location === sec.key).sort(sortByName);
+        const srv = servers.filter(s => s.location === sec.key).sort(sortByName);
+        if (svc.length === 0 && srv.length === 0) continue;
+        const grid = svc.map(renderCard).join('') + srv.map(renderServerCard).join('');
+        html += `
+          <div class="group-location" data-location="${escapeHtml(sec.key)}">
+            <h3 class="location-title">${escapeHtml(sec.label)}</h3>
+            <div class="grid">${grid}</div>
+          </div>
+        `;
       }
 
-      document.getElementById('app').innerHTML = html || '<p class="loading">등록된 서비스가 없습니다.</p>';
+      // SECTION_ORDER 에 없는 location 은 라벨 없는 그리드로 뒤에 붙인다.
+      const orphan = services.filter(s => !known.has(s.location)).sort(sortByName);
+      if (orphan.length > 0) {
+        html += `<div class="grid">${orphan.map(renderCard).join('')}</div>`;
+      }
+
+      document.getElementById('app').innerHTML = html
+        ? `<section class="section">${html}</section>`
+        : '<p class="loading">등록된 서비스가 없습니다.</p>';
     }
 
     function refreshLinks() {

@@ -33,13 +33,6 @@
       "location": "Public"
     },
     {
-      "name": "NAS Explorer",
-      "url": "https://file.rahoon.site",
-      "subtitle": "file.rahoon.site",
-      "icon": "https://raw.githubusercontent.com/WalkxCode/dashboard-icons/main/png/filebrowser.png",
-      "location": "Members"
-    },
-    {
       "name": "메시징서버",
       "url": "https://message.rahoon.site",
       "subtitle": "message.rahoon.site",
@@ -79,13 +72,6 @@
       "url": "https://musings.rahoon.site",
       "subtitle": "musings.rahoon.site",
       "icon": "https://unpkg.com/@tabler/icons-png@latest/icons/outline/writing.png",
-      "location": "Profile"
-    },
-    {
-      "name": "자소서",
-      "url": "https://file.rahoon.site/share/QFPJlEYD",
-      "subtitle": "file.rahoon.site/share/QFPJlEYD",
-      "icon": "https://unpkg.com/@tabler/icons-png@latest/icons/outline/file-cv.png",
       "location": "Profile"
     }
   ]
