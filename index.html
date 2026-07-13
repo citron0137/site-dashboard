@@ -161,6 +161,26 @@
       transform: translateY(0);
     }
 
+    .card--disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .card--disabled .card-icon {
+      filter: grayscale(1);
+    }
+
+    .card-badge {
+      flex-shrink: 0;
+      padding: 0.05rem 0.35rem;
+      font-size: 0.6rem;
+      font-weight: 500;
+      background: var(--border);
+      color: var(--text-muted);
+      border-radius: 4px;
+    }
+
     .card-icon {
       width: 36px;
       height: 36px;
@@ -177,6 +197,13 @@
     .card-name {
       font-size: 0.9rem;
       font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      min-width: 0;
+    }
+
+    .card-name-text {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -534,16 +561,21 @@
       };
     }
 
+    const CARD_ICON_FALLBACK = "this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2371717a%22%3E%3Cpath d=%22M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm3.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z%22/%3E%3C/svg%3E'";
+
     function renderCard(service) {
-      return `
-        <a href="${escapeHtml(service.url)}" target="_blank" rel="noopener noreferrer" class="card">
-          <img src="${escapeHtml(service.icon)}" alt="" class="card-icon" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2371717a%22%3E%3Cpath d=%22M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm3.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z%22/%3E%3C/svg%3E'">
-          <div class="card-body">
-            <div class="card-name">${escapeHtml(service.name)}</div>
-            <div class="card-subtitle">${escapeHtml(service.subtitle || '')}</div>
-          </div>
-        </a>
+      const badgeHtml = service.disabled ? '<span class="card-badge">비활성</span>' : '';
+      const inner = `
+        <img src="${escapeHtml(service.icon)}" alt="" class="card-icon" loading="lazy" onerror="${CARD_ICON_FALLBACK}">
+        <div class="card-body">
+          <div class="card-name"><span class="card-name-text">${escapeHtml(service.name)}</span>${badgeHtml}</div>
+          <div class="card-subtitle">${escapeHtml(service.subtitle || '')}</div>
+        </div>
       `;
+      if (service.disabled) {
+        return `<div class="card card--disabled" aria-disabled="true">${inner}</div>`;
+      }
+      return `<a href="${escapeHtml(service.url)}" target="_blank" rel="noopener noreferrer" class="card">${inner}</a>`;
     }
 
     function renderServerCard(server) {

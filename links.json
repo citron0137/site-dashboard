@@ -8,7 +8,8 @@
       "url": "https://live-yt-queue.rahoon.site",
       "subtitle": "live-yt-queue.rahoon.site",
       "icon": "https://raw.githubusercontent.com/WalkxCode/dashboard-icons/main/png/youtube.png",
-      "location": "Public"
+      "location": "Public",
+      "disabled": true
     },
     {
       "name": "Tome",
@@ -19,9 +20,16 @@
     },
     {
       "name": "QR 파일전송",
-      "url": "https://qr.rahoon.site/",
-      "subtitle": "qr.rahoon.site",
+      "url": "https://fileqr.rahoon.site/",
+      "subtitle": "fileqr.rahoon.site",
       "icon": "https://unpkg.com/@tabler/icons-png@latest/icons/outline/qrcode.png",
+      "location": "Public"
+    },
+    {
+      "name": "Voca",
+      "url": "https://voca.rahoon.site",
+      "subtitle": "voca.rahoon.site",
+      "icon": "https://unpkg.com/@tabler/icons-png@latest/icons/outline/vocabulary.png",
       "location": "Public"
     },
     {
@@ -46,6 +54,13 @@
       "location": "Members"
     },
     {
+      "name": "Portfolio",
+      "url": "https://portfolio.rahoon.site",
+      "subtitle": "portfolio.rahoon.site",
+      "icon": "https://unpkg.com/@tabler/icons-png@latest/icons/outline/briefcase.png",
+      "location": "Profile"
+    },
+    {
       "name": "GitHub",
       "url": "https://github.com/citron0137",
       "subtitle": "github.com/citron0137",
@@ -57,6 +72,13 @@
       "url": "https://www.linkedin.com/in/%EB%8F%84%ED%9B%88-%EB%9D%BC-357b081a6/",
       "subtitle": "linkedin.com/in/도훈-라",
       "icon": "https://raw.githubusercontent.com/WalkxCode/dashboard-icons/main/png/linkedin.png",
+      "location": "Profile"
+    },
+    {
+      "name": "Musings",
+      "url": "https://musings.rahoon.site",
+      "subtitle": "musings.rahoon.site",
+      "icon": "https://unpkg.com/@tabler/icons-png@latest/icons/outline/writing.png",
       "location": "Profile"
     },
     {
