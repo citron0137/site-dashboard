@@ -1,0 +1,70 @@
+{
+  "config": {
+    "title": "Rahoon's Dashboard"
+  },
+  "services": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/citron0137",
+      "subtitle": "github.com/citron0137",
+      "icon": "https://raw.githubusercontent.com/WalkxCode/dashboard-icons/main/png/github.png",
+      "location": "External"
+    },
+    {
+      "name": "LinkedIn",
+      "url": "https://www.linkedin.com/in/%EB%8F%84%ED%9B%88-%EB%9D%BC-357b081a6/",
+      "subtitle": "linkedin.com/in/도훈-라",
+      "icon": "https://raw.githubusercontent.com/WalkxCode/dashboard-icons/main/png/linkedin.png",
+      "location": "External"
+    },
+    {
+      "name": "Live YT Queue",
+      "url": "https://live-yt-queue.rahoon.site",
+      "subtitle": "live-yt-queue.rahoon.site",
+      "icon": "https://raw.githubusercontent.com/WalkxCode/dashboard-icons/main/png/youtube.png",
+      "location": "AWS"
+    },
+    {
+      "name": "NAS Explorer",
+      "url": "https://file.rahoon.site",
+      "subtitle": "file.rahoon.site",
+      "icon": "https://raw.githubusercontent.com/WalkxCode/dashboard-icons/main/png/filebrowser.png",
+      "location": "HomeLab"
+    },
+    {
+      "name": "메시징서버",
+      "url": "https://message.rahoon.site",
+      "subtitle": "message.rahoon.site",
+      "icon": "https://raw.githubusercontent.com/WalkxCode/dashboard-icons/main/png/rocket-chat.png",
+      "location": "HomeLab"
+    },
+    {
+      "name": "Monstera",
+      "url": "https://monstera.rahoon.site/",
+      "subtitle": "monstera.rahoon.site",
+      "icon": "https://unpkg.com/@tabler/icons-png@latest/icons/outline/leaf.png",
+      "location": "HomeLab"
+    },
+    {
+      "name": "Tome",
+      "url": "https://tome.rahoon.site/",
+      "subtitle": "tome.rahoon.site",
+      "icon": "https://unpkg.com/@tabler/icons-png@latest/icons/outline/notebook.png",
+      "location": "HomeLab"
+    },
+    {
+      "name": "QR 파일전송",
+      "url": "https://qr.rahoon.site/",
+      "subtitle": "qr.rahoon.site",
+      "icon": "https://unpkg.com/@tabler/icons-png@latest/icons/outline/qrcode.png",
+      "location": "HomeLab"
+    },
+    {
+      "name": "자소서",
+      "url": "https://file.rahoon.site/share/QFPJlEYD",
+      "subtitle": "file.rahoon.site/share/QFPJlEYD",
+      "icon": "https://unpkg.com/@tabler/icons-png@latest/icons/outline/file-cv.png",
+      "location": "Site"
+    }
+  ]
+}

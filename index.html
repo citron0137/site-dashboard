@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Rahoon's Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --surface: #18181c;
+      --surface-hover: #222228;
+      --border: #2a2a32;
+      --text: #e4e4e7;
+      --text-muted: #71717a;
+      --accent: #22c55e;
+      --accent-dim: rgba(34, 197, 94, 0.15);
+      --aws: #ff9900;
+      --aws-dim: rgba(255, 153, 0, 0.12);
+      --external: #6366f1;
+      --external-dim: rgba(99, 102, 241, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 12px;
+      margin-right: 0.5rem;
+      border-radius: 2px;
+      vertical-align: middle;
+    }
+
+    .section[data-type="public"] .section-title::before {
+      background: var(--accent);
+    }
+
+    .section[data-type="extra"] .section-title::before {
+      background: var(--external);
+    }
+
+    .group-location {
+      margin-top: 1.5rem;
+    }
+
+    .group-location:first-of-type {
+      margin-top: 1rem;
+    }
+
+    .location-title {
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      opacity: 0.9;
+    }
+
+    .location-title::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 10px;
+      margin-right: 0.4rem;
+      border-radius: 2px;
+      vertical-align: middle;
+    }
+
+    .group-location[data-location="HomeLab"] .location-title::before,
+    .group-location[data-location="HomeLab-Server"] .location-title::before {
+      background: var(--accent);
+    }
+
+    .group-location[data-location="AWS"] .location-title::before,
+    .group-location[data-location="AWS-Server"] .location-title::before {
+      background: var(--aws);
+    }
+
+    .group-location[data-location="Tools"] .location-title::before,
+    .group-location[data-location="Profile"] .location-title::before {
+      background: var(--external);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .card {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      padding: 0.875rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+
+    .card:hover {
+      background: var(--surface-hover);
+      border-color: var(--text-muted);
+      transform: translateY(-1px);
+    }
+
+    .card:active {
+      transform: translateY(0);
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      object-fit: contain;
+      flex-shrink: 0;
+      background: var(--bg);
+    }
+
+    .card-body {
+      min-width: 0;
+    }
+
+    .card-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-subtitle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-muted);
+    }
+
+    .error {
+      padding: 1.5rem;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 10px;
+      color: #fca5a5;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .more-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+    .more-btn {
+      background: var(--surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.55rem 1.6rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .more-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
+
+    .state-badge {
+      display: inline-block;
+      margin-left: 0.5rem;
+      padding: 0.15rem 0.4rem;
+      font-size: 0.65rem;
+      background: var(--accent-dim);
+      color: var(--accent);
+      border-radius: 4px;
+    }
+
+    .pw-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pw-modal[hidden] { display: none; }
+    .pw-modal__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+    }
+    .pw-modal__card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.4rem;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .pw-modal__label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .pw-modal__input {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.55rem 0.7rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .pw-modal__input:focus { border-color: var(--text-muted); }
+    .pw-modal__input:disabled { opacity: 0.6; cursor: wait; }
+    .pw-modal__error {
+      font-size: 0.85rem;
+      color: #f87171;
+      margin-top: -0.3rem;
+    }
+    .pw-modal__buttons {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+    .pw-modal__btn {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.45rem 0.95rem;
+      font-family: inherit;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .pw-modal__btn:hover { background: var(--surface-hover); }
+    .pw-modal__btn--submit {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border-color: transparent;
+    }
+    .pw-modal__btn--submit:hover {
+      background: var(--accent);
+      color: var(--bg);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 id="title">Dashboard</h1>
+    </header>
+
+    <div id="app">
+      <div class="loading">링크를 불러오는 중...</div>
+    </div>
+
+    <div class="more-row">
+      <button id="more-btn" class="more-btn" type="button">더보기</button>
+    </div>
+
+    <footer class="footer">
+      <span>© 2025 Rahoon</span>
+      <span id="state-badge" class="state-badge" style="display:none;">전체</span>
+      <span id="last-updated" class="last-updated"></span>
+    </footer>
+  </div>
+
+  <div id="pw-modal" class="pw-modal" hidden>
+    <div class="pw-modal__backdrop"></div>
+    <form class="pw-modal__card">
+      <label class="pw-modal__label" for="pw-modal__input">비밀번호</label>
+      <input id="pw-modal__input" class="pw-modal__input" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="pw-modal__error" hidden></div>
+      <div class="pw-modal__buttons">
+        <button type="button" class="pw-modal__btn pw-modal__btn--cancel">취소</button>
+        <button type="submit" class="pw-modal__btn pw-modal__btn--submit">확인</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'dashboard-state';
+    const BLOB_URL = './cache.json';
+
+    const CRYPTO_CONFIG = {
+      salt: 'rahoon_dashboard_2025',
+      pbkdf2Iterations: 600000
+    };
+    async function deriveKey(password) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+      );
+      return crypto.subtle.deriveKey(
+        {
+          name: 'PBKDF2',
+          salt: enc.encode(CRYPTO_CONFIG.salt),
+          iterations: CRYPTO_CONFIG.pbkdf2Iterations,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+      );
+    }
+
+    async function decryptBlob(encryptedJson, password) {
+      const { iv, tag, data } = JSON.parse(encryptedJson);
+      const key = await deriveKey(password);
+      const ivBuf = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
+      const tagBuf = Uint8Array.from(atob(tag), c => c.charCodeAt(0));
+      const dataBuf = Uint8Array.from(atob(data), c => c.charCodeAt(0));
+      const ciphertext = new Uint8Array(dataBuf.length + tagBuf.length);
+      ciphertext.set(dataBuf);
+      ciphertext.set(tagBuf, dataBuf.length);
+      const dec = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: ivBuf },
+        key,
+        ciphertext
+      );
+      return JSON.parse(new TextDecoder().decode(dec));
+    }
+
+    async function tryUnlock(password) {
+      const res = await fetch(BLOB_URL);
+      if (!res.ok) throw new Error('FETCH_FAILED');
+      return await decryptBlob(await res.text(), password);
+    }
+
+    /**
+     * 마스킹된 비밀번호 입력 모달.
+     * options.validate(value) — null/undefined 반환 시 성공 (resolve), 문자열 반환 시 인라인 에러 후 재시도 대기.
+     * 반환: 성공 시 입력값, 취소(Escape/취소 버튼/backdrop) 시 null.
+     */
+    function promptPassword({ validate } = {}) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('pw-modal');
+        const form = modal.querySelector('.pw-modal__card');
+        const input = modal.querySelector('.pw-modal__input');
+        const cancelBtn = modal.querySelector('.pw-modal__btn--cancel');
+        const submitBtn = modal.querySelector('.pw-modal__btn--submit');
+        const backdrop = modal.querySelector('.pw-modal__backdrop');
+        const errorEl = modal.querySelector('.pw-modal__error');
+
+        function setError(msg) {
+          if (msg) { errorEl.textContent = msg; errorEl.hidden = false; }
+          else { errorEl.hidden = true; }
+        }
+        function setBusy(busy) {
+          input.disabled = busy;
+          submitBtn.disabled = busy;
+          cancelBtn.disabled = busy;
+        }
+        function cleanup(value) {
+          modal.hidden = true;
+          input.value = '';
+          setError('');
+          setBusy(false);
+          form.removeEventListener('submit', onSubmit);
+          cancelBtn.removeEventListener('click', onCancel);
+          backdrop.removeEventListener('click', onCancel);
+          document.removeEventListener('keydown', onKey);
+          resolve(value);
+        }
+        async function onSubmit(e) {
+          e.preventDefault();
+          const value = input.value;
+          if (!value) return;
+          if (!validate) { cleanup(value); return; }
+          setBusy(true);
+          setError('');
+          try {
+            const errMsg = await validate(value);
+            if (errMsg === null || errMsg === undefined) {
+              cleanup(value);
+            } else {
+              setBusy(false);
+              setError(errMsg);
+              input.value = '';
+              input.focus();
+            }
+          } catch (e) {
+            setBusy(false);
+            setError('오류: ' + (e && e.message ? e.message : e));
+            input.value = '';
+            input.focus();
+          }
+        }
+        function onCancel() { cleanup(null); }
+        function onKey(e) { if (e.key === 'Escape' && !input.disabled) onCancel(); }
+
+        form.addEventListener('submit', onSubmit);
+        cancelBtn.addEventListener('click', onCancel);
+        backdrop.addEventListener('click', onCancel);
+        document.addEventListener('keydown', onKey);
+
+        setError('');
+        setBusy(false);
+        modal.hidden = false;
+        setTimeout(() => input.focus(), 0);
+      });
+    }
+
+    function isExtendedMode() {
+      return sessionStorage.getItem(STORAGE_KEY) === '1';
+    }
+
+    function setExtendedMode(on) {
+      sessionStorage.setItem(STORAGE_KEY, on ? '1' : '0');
+    }
+
+    function normalizeExtraData(data) {
+      if (data.services) {
+        return { extraServices: data.services, extraServers: data.servers || [] };
+      }
+      const extraServices = [];
+      const extraServers = [];
+      for (const loc of LOCATION_ORDER) {
+        const locData = data[loc];
+        if (locData) {
+          (locData.services || []).forEach(s => extraServices.push({ ...s, location: loc }));
+          (locData.servers || []).forEach(s => extraServers.push({ ...s, location: loc }));
+        }
+      }
+      return { extraServices, extraServers };
+    }
+
+    async function loadLinks() {
+      if (!isExtendedMode()) {
+        const publicRes = await fetch('./links.json');
+        if (!publicRes.ok) throw new Error('links.json을 불러올 수 없습니다.');
+        return await publicRes.json();
+      }
+
+      const cachedPassword = sessionStorage.getItem(STORAGE_KEY + '-pw');
+      if (!cachedPassword) throw new Error('PASSWORD_REQUIRED');
+
+      let extraData;
+      try {
+        extraData = await tryUnlock(cachedPassword);
+      } catch (e) {
+        if (e.message === 'FETCH_FAILED') throw new Error('데이터를 불러올 수 없습니다.');
+        sessionStorage.removeItem(STORAGE_KEY + '-pw');
+        setExtendedMode(false);
+        throw new Error('복호화 실패. 비밀번호를 확인하세요.');
+      }
+
+      const { extraServices, extraServers } = normalizeExtraData(extraData);
+      return {
+        config: extraData.config || {},
+        publicServices: [],
+        extraServices,
+        extraServers
+      };
+    }
+
+    function renderCard(service) {
+      return `
+        <a href="${escapeHtml(service.url)}" target="_blank" rel="noopener noreferrer" class="card">
+          <img src="${escapeHtml(service.icon)}" alt="" class="card-icon" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2371717a%22%3E%3Cpath d=%22M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm3.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z%22/%3E%3C/svg%3E'">
+          <div class="card-body">
+            <div class="card-name">${escapeHtml(service.name)}</div>
+            <div class="card-subtitle">${escapeHtml(service.subtitle || '')}</div>
+          </div>
+        </a>
+      `;
+    }
+
+    function renderServerCard(server) {
+      const url = server.url || (server.ip && (server.ip.startsWith('http') ? server.ip : 'http://' + server.ip)) || '#';
+      return `
+        <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="card">
+          <img src="${escapeHtml(server.icon)}" alt="" class="card-icon" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2371717a%22%3E%3Cpath d=%22M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm3.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z%22/%3E%3C/svg%3E'">
+          <div class="card-body">
+            <div class="card-name">${escapeHtml(server.name)}</div>
+            <div class="card-subtitle">${escapeHtml(server.ip || '')}</div>
+          </div>
+        </a>
+      `;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    const LOCATION_ORDER = ['HomeLab', 'AWS', 'Tools', 'Profile'];
+    const LOCATION_LABELS = { HomeLab: 'HomeLab', AWS: 'AWS', Tools: 'Tools', Profile: 'Profile' };
+    const EXTRA_SECTION_ORDER = [
+      { key: 'HomeLab', label: 'HomeLab', type: 'services', location: 'HomeLab' },
+      { key: 'HomeLab-Server', label: 'HomeLab-Server', type: 'servers', location: 'HomeLab' },
+      { key: 'AWS', label: 'AWS', type: 'services', location: 'AWS' },
+      { key: 'AWS-Server', label: 'AWS-Server', type: 'servers', location: 'AWS' },
+      { key: 'Tools', label: 'Tools', type: 'services', location: 'Tools' },
+      { key: 'Profile', label: 'Profile', type: 'services', location: 'Profile' }
+    ];
+
+    function sortByName(a, b) {
+      const na = (a.name || '').toLowerCase();
+      const nb = (b.name || '').toLowerCase();
+      const aLatin = /^[a-z]/.test(na);
+      const bLatin = /^[a-z]/.test(nb);
+      if (aLatin && !bLatin) return -1;
+      if (!aLatin && bLatin) return 1;
+      return na.localeCompare(nb, 'en', { sensitivity: 'base' });
+    }
+
+    function groupByLocation(services) {
+      const groups = {};
+      for (const loc of LOCATION_ORDER) {
+        const arr = (services || []).filter(s => s.location === loc);
+        arr.sort(sortByName);
+        groups[loc] = arr;
+      }
+      return groups;
+    }
+
+    function render(data, config) {
+      const title = config?.title || 'Dashboard';
+      document.getElementById('title').textContent = title;
+
+      let html = '';
+      if (data.publicServices !== undefined) {
+        if (data.publicServices.length > 0) {
+          const sorted = [...data.publicServices].sort(sortByName);
+          html += `
+            <section class="section" data-type="public">
+              <div class="grid">${sorted.map(renderCard).join('')}</div>
+            </section>
+          `;
+        }
+        if ((data.extraServices && data.extraServices.length > 0) || (data.extraServers && data.extraServers.length > 0)) {
+          const servicesByLoc = groupByLocation(data.extraServices || []);
+          const serversByLoc = {};
+          for (const loc of LOCATION_ORDER) {
+            const arr = (data.extraServers || []).filter(s => s.location === loc);
+            arr.sort(sortByName);
+            serversByLoc[loc] = arr;
+          }
+          let extraHtml = '';
+          for (const sec of EXTRA_SECTION_ORDER) {
+            const items = sec.type === 'services' ? (servicesByLoc[sec.location] || []) : (serversByLoc[sec.location] || []);
+            if (items.length === 0) continue;
+            const gridContent = sec.type === 'services'
+              ? items.map(renderCard).join('')
+              : items.map(renderServerCard).join('');
+            extraHtml += `
+              <div class="group-location" data-location="${escapeHtml(sec.key)}">
+                <h3 class="location-title">${escapeHtml(sec.label)}</h3>
+                <div class="grid">${gridContent}</div>
+              </div>
+            `;
+          }
+          html += `<section class="section" data-type="extra">${extraHtml}</section>`;
+        }
+      } else {
+        const services = (data.services || []).slice().sort(sortByName);
+        html = services.length > 0
+          ? `<div class="grid">${services.map(renderCard).join('')}</div>`
+          : '<p class="loading">등록된 서비스가 없습니다.</p>';
+      }
+
+      document.getElementById('app').innerHTML = html || '<p class="loading">등록된 서비스가 없습니다.</p>';
+    }
+
+    function refreshLinks() {
+      loadLinks()
+        .then(data => {
+          render(data, data.config);
+          const extended = isExtendedMode();
+          document.getElementById('state-badge').style.display = extended ? 'inline-block' : 'none';
+          const moreBtn = document.getElementById('more-btn');
+          if (moreBtn) moreBtn.textContent = extended ? '닫기' : '더보기';
+        })
+        .catch(err => {
+          if (err.message === 'PASSWORD_REQUIRED') {
+            setExtendedMode(false);
+            refreshLinks();
+            return;
+          }
+          document.getElementById('app').innerHTML = `
+            <div class="error">
+              <strong>오류</strong>: ${escapeHtml(err.message)}
+            </div>
+          `;
+        });
+    }
+
+    (function initMoreBtn() {
+      document.getElementById('more-btn').addEventListener('click', async function() {
+        if (isExtendedMode()) {
+          sessionStorage.removeItem(STORAGE_KEY + '-pw');
+          setExtendedMode(false);
+          refreshLinks();
+        } else {
+          const password = await promptPassword({
+            validate: async (pw) => {
+              try {
+                await tryUnlock(pw);
+                return null;
+              } catch (e) {
+                if (e.message === 'FETCH_FAILED') return '데이터를 불러올 수 없습니다.';
+                return '비밀번호가 올바르지 않습니다.';
+              }
+            }
+          });
+          if (password === null || password === '') return;
+          sessionStorage.setItem(STORAGE_KEY + '-pw', password);
+          setExtendedMode(true);
+          refreshLinks();
+        }
+      });
+    })();
+
+    (function initLastUpdated() {
+      fetch(window.location.href, { method: 'HEAD' })
+        .then(r => {
+          const lm = r.headers.get('Last-Modified');
+          if (lm) {
+            const el = document.getElementById('last-updated');
+            if (el) el.textContent = ' · 최종 변경: ' + new Date(lm).toLocaleString('ko-KR');
+          }
+        })
+        .catch(() => {});
+    })();
+
+    refreshLinks();
+  </script>
+</body>
+</html>
